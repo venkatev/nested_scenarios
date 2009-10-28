@@ -1,13 +1,61 @@
 NestedScenarios
 ===============
 
-Introduction goes here.
+Nest multiple scenarios to create a story and defining tests within the nested
+scopes.
 
+This is not restricted to just functional tests and can be used with model and
+other unit tests and wherever you want to DRY up the code in the tests.
 
 Example
 =======
+class SomeControllerTest < ActionController::TestCase
+  ....
+  ..
 
-Example goes here.
+  scenario :latest_models => true do
+   scenario :sedan => true do
+     add_test 'unlogged in view of latest sedan cars' do
+       get :index
+       assert_redirected_to login_path
+     end
 
+     scenario :viewer => buyer do
+       add_test do
+         get :index
+         assert_response :success
+         # Buyers should not see cars under manufacture
+         assert !assigns(:cars).include(cars(:under_manufacture))
+       end
+     end
 
-Copyright (c) 2009 [name of plugin creator], released under the MIT license
+     scenario :viewer => car_admin do
+       add_test do
+         get :index
+         assert_response :success
+         # Admin should see cars under manufacture
+         assert assigns(:cars).include(cars(:under_manufacture))
+       end
+     end
+   end
+  end
+
+  ....
+  ..
+end
+
+generates the following (sample) test methods with pre and post scenario codes...
+
+def test_latest_models_true_and_sedan_true_and_unlogged_in_view_of_latest_sedan_cars
+ # Pre-processing code
+ ....
+ # Post-processing code
+end
+
+def test_latest_models_true_and_sedan_true_and_viewer_buyer
+ # Pre-processing code
+ ....
+ # Post-processing code
+end
+
+Copyright (c) 2009 Vikram Venkatesan, released under the MIT license
